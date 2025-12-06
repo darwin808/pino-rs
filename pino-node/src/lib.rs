@@ -1,6 +1,7 @@
 use napi::bindgen_prelude::*;
+use napi::Either;
 use napi_derive::napi;
-use pino_core::{Logger as CoreLogger, LoggerBuilder, Level, Fields};
+use pino_core::{AsyncLogger as CoreLogger, Level, Fields};
 use serde_json::Value;
 use std::collections::HashMap;
 
@@ -13,11 +14,11 @@ pub struct Logger {
 impl Logger {
     #[napi(constructor)]
     pub fn new(options: Option<Object>) -> Result<Self> {
-        let mut builder = LoggerBuilder::new();
+        let mut logger = CoreLogger::new();
 
         if let Some(opts) = options {
             // Parse level
-            if let Ok(level_str) = opts.get::<_, String>("level") {
+            if let Ok(Some(level_str)) = opts.get::<_, String>("level") {
                 let level = match level_str.as_str() {
                     "trace" => Level::Trace,
                     "debug" => Level::Debug,
@@ -27,91 +28,59 @@ impl Logger {
                     "fatal" => Level::Fatal,
                     _ => Level::Info,
                 };
-                builder = builder.level(level);
+                logger.set_level(level);
             }
 
             // Parse base fields
-            if let Ok(base) = opts.get::<_, Object>("base") {
+            if let Ok(Some(base)) = opts.get::<_, Object>("base") {
                 let keys = Object::keys(&base)?;
+                let mut base_fields = HashMap::new();
                 for key in keys {
-                    if let Ok(val) = base.get::<_, Unknown>(&key) {
+                    if let Ok(Some(val)) = base.get::<_, Unknown>(&key) {
                         if let Ok(json_val) = napi_value_to_json(val) {
-                            builder = builder.with_field(key, json_val);
+                            base_fields.insert(key, json_val);
                         }
                     }
+                }
+                if !base_fields.is_empty() {
+                    logger = logger.child(base_fields);
                 }
             }
         }
 
         Ok(Self {
-            inner: builder.build(),
+            inner: logger,
         })
     }
 
     #[napi]
-    pub fn trace(&self, msg: String, fields: Option<Object>) -> Result<()> {
-        if let Some(f) = fields {
-            let parsed_fields = parse_fields(f)?;
-            self.inner.trace_with_fields(&msg, parsed_fields);
-        } else {
-            self.inner.trace(&msg);
-        }
-        Ok(())
+    pub fn trace(&self, msg_or_obj: Either<String, Object>, msg: Option<String>) -> Result<()> {
+        log_with_either(&self.inner, pino_core::Level::Trace, msg_or_obj, msg)
     }
 
     #[napi]
-    pub fn debug(&self, msg: String, fields: Option<Object>) -> Result<()> {
-        if let Some(f) = fields {
-            let parsed_fields = parse_fields(f)?;
-            self.inner.debug_with_fields(&msg, parsed_fields);
-        } else {
-            self.inner.debug(&msg);
-        }
-        Ok(())
+    pub fn debug(&self, msg_or_obj: Either<String, Object>, msg: Option<String>) -> Result<()> {
+        log_with_either(&self.inner, pino_core::Level::Debug, msg_or_obj, msg)
     }
 
     #[napi]
-    pub fn info(&self, msg: String, fields: Option<Object>) -> Result<()> {
-        if let Some(f) = fields {
-            let parsed_fields = parse_fields(f)?;
-            self.inner.info_with_fields(&msg, parsed_fields);
-        } else {
-            self.inner.info(&msg);
-        }
-        Ok(())
+    pub fn info(&self, msg_or_obj: Either<String, Object>, msg: Option<String>) -> Result<()> {
+        log_with_either(&self.inner, pino_core::Level::Info, msg_or_obj, msg)
     }
 
     #[napi]
-    pub fn warn(&self, msg: String, fields: Option<Object>) -> Result<()> {
-        if let Some(f) = fields {
-            let parsed_fields = parse_fields(f)?;
-            self.inner.warn_with_fields(&msg, parsed_fields);
-        } else {
-            self.inner.warn(&msg);
-        }
-        Ok(())
+    pub fn warn(&self, msg_or_obj: Either<String, Object>, msg: Option<String>) -> Result<()> {
+        log_with_either(&self.inner, pino_core::Level::Warn, msg_or_obj, msg)
     }
 
     #[napi]
-    pub fn error(&self, msg: String, fields: Option<Object>) -> Result<()> {
-        if let Some(f) = fields {
-            let parsed_fields = parse_fields(f)?;
-            self.inner.error_with_fields(&msg, parsed_fields);
-        } else {
-            self.inner.error(&msg);
-        }
-        Ok(())
+    pub fn error(&self, msg_or_obj: Either<String, Object>, msg: Option<String>) -> Result<()> {
+        log_with_either(&self.inner, pino_core::Level::Error, msg_or_obj, msg)
     }
 
     #[napi]
-    pub fn fatal(&self, msg: String, fields: Option<Object>) -> Result<()> {
-        if let Some(f) = fields {
-            let parsed_fields = parse_fields(f)?;
-            self.inner.fatal_with_fields(&msg, parsed_fields);
-        } else {
-            self.inner.fatal(&msg);
-        }
-        Ok(())
+    pub fn fatal(&self, msg_or_obj: Either<String, Object>, msg: Option<String>) -> Result<()> {
+        log_with_either(&self.inner, pino_core::Level::Fatal, msg_or_obj, msg)
     }
 
     #[napi]
@@ -123,12 +92,83 @@ impl Logger {
     }
 }
 
+fn log_with_either(
+    logger: &CoreLogger,
+    level: Level,
+    msg_or_obj: Either<String, Object>,
+    msg: Option<String>,
+) -> Result<()> {
+    match msg_or_obj {
+        Either::A(message) => {
+            // First argument is a string (the message)
+            match level {
+                Level::Trace => logger.trace(&message),
+                Level::Debug => logger.debug(&message),
+                Level::Info => logger.info(&message),
+                Level::Warn => logger.warn(&message),
+                Level::Error => logger.error(&message),
+                Level::Fatal => logger.fatal(&message),
+            }
+        }
+        Either::B(obj) => {
+            // First argument is an object (fields), second argument is message
+            let fields = parse_fields(obj)?;
+            let message = msg.as_deref();
+            match level {
+                Level::Trace => {
+                    if let Some(m) = message {
+                        logger.trace_with_fields(m, fields);
+                    } else {
+                        logger.log(level, None, Some(fields));
+                    }
+                }
+                Level::Debug => {
+                    if let Some(m) = message {
+                        logger.debug_with_fields(m, fields);
+                    } else {
+                        logger.log(level, None, Some(fields));
+                    }
+                }
+                Level::Info => {
+                    if let Some(m) = message {
+                        logger.info_with_fields(m, fields);
+                    } else {
+                        logger.log(level, None, Some(fields));
+                    }
+                }
+                Level::Warn => {
+                    if let Some(m) = message {
+                        logger.warn_with_fields(m, fields);
+                    } else {
+                        logger.log(level, None, Some(fields));
+                    }
+                }
+                Level::Error => {
+                    if let Some(m) = message {
+                        logger.error_with_fields(m, fields);
+                    } else {
+                        logger.log(level, None, Some(fields));
+                    }
+                }
+                Level::Fatal => {
+                    if let Some(m) = message {
+                        logger.fatal_with_fields(m, fields);
+                    } else {
+                        logger.log(level, None, Some(fields));
+                    }
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
 fn parse_fields(obj: Object) -> Result<Fields> {
-    let mut fields = HashMap::new();
     let keys = Object::keys(&obj)?;
+    let mut fields = HashMap::with_capacity(keys.len());
 
     for key in keys {
-        if let Ok(val) = obj.get::<_, Unknown>(&key) {
+        if let Ok(Some(val)) = obj.get::<_, Unknown>(&key) {
             if let Ok(json_val) = napi_value_to_json(val) {
                 fields.insert(key, json_val);
             }
@@ -139,27 +179,36 @@ fn parse_fields(obj: Object) -> Result<Fields> {
 }
 
 fn napi_value_to_json(val: Unknown) -> Result<Value> {
-    // Try to convert to different types
-    if let Ok(s) = val.coerce_to_string() {
-        let utf8 = s.into_utf8()?;
-        return Ok(Value::String(utf8.as_str()?.to_string()));
-    }
+    use napi::{ValueType, JsString, JsNumber, JsBoolean};
 
-    if let Ok(n) = val.coerce_to_number() {
-        let num = n.get_double()?;
-        if num.fract() == 0.0 && num.is_finite() {
-            return Ok(Value::Number(serde_json::Number::from(num as i64)));
+    let value_type = val.get_type()?;
+
+    match value_type {
+        ValueType::String => {
+            let s = unsafe { val.cast::<JsString>() };
+            let utf8 = s.into_utf8()?;
+            Ok(Value::String(utf8.as_str()?.to_string()))
         }
-        if let Some(num_val) = serde_json::Number::from_f64(num) {
-            return Ok(Value::Number(num_val));
+        ValueType::Number => {
+            let n = unsafe { val.cast::<JsNumber>() };
+            let num = n.get_double()?;
+            if num.fract() == 0.0 && num.is_finite() {
+                Ok(Value::Number(serde_json::Number::from(num as i64)))
+            } else if let Some(num_val) = serde_json::Number::from_f64(num) {
+                Ok(Value::Number(num_val))
+            } else {
+                Ok(Value::Null)
+            }
         }
+        ValueType::Boolean => {
+            let b = unsafe { val.cast::<JsBoolean>() };
+            Ok(Value::Bool(b.get_value()?))
+        }
+        ValueType::Null | ValueType::Undefined => {
+            Ok(Value::Null)
+        }
+        _ => Ok(Value::Null),
     }
-
-    if let Ok(b) = val.coerce_to_bool() {
-        return Ok(Value::Bool(b.get_value()?));
-    }
-
-    Ok(Value::Null)
 }
 
 #[napi]

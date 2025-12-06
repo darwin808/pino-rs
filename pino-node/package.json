@@ -1,6 +1,6 @@
 {
   "name": "pino-rs",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "A blazingly fast Rust implementation of pino.js logger - fully compatible drop-in replacement",
   "main": "index.js",
   "types": "index.d.ts",
@@ -18,9 +18,9 @@
   },
   "scripts": {
     "artifacts": "napi artifacts",
-    "build": "napi build --platform --release",
-    "build:debug": "napi build --platform",
-    "prepublishOnly": "napi prepublish -t npm",
+    "build": "napi build --platform --release && node fix-exports.js",
+    "build:debug": "napi build --platform && node fix-exports.js",
+    "prepublishOnly": "napi prepublish -t npm && node fix-exports.js",
     "test": "node test.js",
     "version": "napi version"
   },
@@ -37,13 +37,23 @@
   "author": "pino-rs contributors",
   "license": "MIT",
   "devDependencies": {
-    "@napi-rs/cli": "^2.18.0"
+    "@napi-rs/cli": "^2.18.0",
+    "pino": "^10.1.0"
   },
   "engines": {
     "node": ">= 10"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/pino-rs"
+    "url": "https://github.com/darwin808/pino-rs"
+  },
+  "optionalDependencies": {
+    "pino-rs-win32-x64-msvc": "0.3.0",
+    "pino-rs-darwin-x64": "0.3.0",
+    "pino-rs-linux-x64-gnu": "0.3.0",
+    "pino-rs-linux-x64-musl": "0.3.0",
+    "pino-rs-linux-arm64-gnu": "0.3.0",
+    "pino-rs-darwin-arm64": "0.3.0",
+    "pino-rs-linux-arm64-musl": "0.3.0"
   }
 }

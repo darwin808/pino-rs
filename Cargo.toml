@@ -13,6 +13,12 @@ members = ["pino-core", "pino-node"]
 pino-core = { path = "pino-core" }
 serde_json = "1.0"
 
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+
 [[example]]
 name = "basic"
 path = "examples/basic.rs"
