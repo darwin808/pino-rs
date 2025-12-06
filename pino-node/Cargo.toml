@@ -1,0 +1,19 @@
+[package]
+name = "pino-node"
+version = "0.1.0"
+edition = "2021"
+authors = ["pino-rs contributors"]
+description = "Node.js bindings for pino-rs"
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+pino-core = { path = "../pino-core" }
+napi = { version = "2", features = ["full"] }
+napi-derive = "2"
+serde_json = "1.0"
+
+[build-dependencies]
+napi-build = "2"

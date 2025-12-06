@@ -1,0 +1,49 @@
+{
+  "name": "pino-rs",
+  "version": "0.1.0",
+  "description": "A blazingly fast Rust implementation of pino.js logger - fully compatible drop-in replacement",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "napi": {
+    "name": "pino-rs",
+    "triples": {
+      "defaults": true,
+      "additional": [
+        "x86_64-unknown-linux-musl",
+        "aarch64-unknown-linux-gnu",
+        "aarch64-apple-darwin",
+        "aarch64-unknown-linux-musl"
+      ]
+    }
+  },
+  "scripts": {
+    "artifacts": "napi artifacts",
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform",
+    "prepublishOnly": "napi prepublish -t npm",
+    "test": "node test.js",
+    "version": "napi version"
+  },
+  "keywords": [
+    "logger",
+    "logging",
+    "pino",
+    "json",
+    "rust",
+    "fast",
+    "performance",
+    "structured-logging"
+  ],
+  "author": "pino-rs contributors",
+  "license": "MIT",
+  "devDependencies": {
+    "@napi-rs/cli": "^2.18.0"
+  },
+  "engines": {
+    "node": ">= 10"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/pino-rs"
+  }
+}

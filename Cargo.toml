@@ -1,0 +1,26 @@
+[package]
+name = "pino-rs"
+version = "0.1.0"
+edition = "2021"
+authors = ["pino-rs contributors"]
+description = "A blazingly fast Rust implementation of pino.js logger"
+license = "MIT"
+
+[workspace]
+members = ["pino-core", "pino-node"]
+
+[dependencies]
+pino-core = { path = "pino-core" }
+serde_json = "1.0"
+
+[[example]]
+name = "basic"
+path = "examples/basic.rs"
+
+[[example]]
+name = "child_logger"
+path = "examples/child_logger.rs"
+
+[[example]]
+name = "structured_logging"
+path = "examples/structured_logging.rs"
