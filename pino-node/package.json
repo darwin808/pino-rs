@@ -4,6 +4,11 @@
   "description": "A blazingly fast Rust implementation of pino.js logger - fully compatible drop-in replacement",
   "main": "index.js",
   "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md"
+  ],
   "napi": {
     "name": "pino-rs",
     "triples": {
