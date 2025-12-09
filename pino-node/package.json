@@ -1,6 +1,6 @@
 {
   "name": "pino-rs",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "A blazingly fast Rust implementation of pino.js logger - fully compatible drop-in replacement",
   "main": "index.js",
   "types": "index.d.ts",
