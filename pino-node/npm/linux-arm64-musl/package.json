@@ -1,0 +1,23 @@
+{
+  "name": "pino-rs-linux-arm64-musl",
+  "version": "0.3.8",
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "arm64"
+  ],
+  "libc": [
+    "musl"
+  ],
+  "main": "pino-rs.linux-arm64-musl.node",
+  "files": [
+    "pino-rs.linux-arm64-musl.node"
+  ],
+  "description": "pino-rs native binding for linux-arm64-musl",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/darwin808/pino-rs"
+  }
+}

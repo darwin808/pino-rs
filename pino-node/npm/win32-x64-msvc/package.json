@@ -1,0 +1,20 @@
+{
+  "name": "pino-rs-win32-x64-msvc",
+  "version": "0.3.8",
+  "os": [
+    "win32"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "main": "pino-rs.win32-x64-msvc.node",
+  "files": [
+    "pino-rs.win32-x64-msvc.node"
+  ],
+  "description": "pino-rs native binding for win32-x64-msvc",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/darwin808/pino-rs"
+  }
+}

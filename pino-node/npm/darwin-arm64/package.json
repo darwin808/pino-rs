@@ -1,0 +1,20 @@
+{
+  "name": "pino-rs-darwin-arm64",
+  "version": "0.3.8",
+  "os": [
+    "darwin"
+  ],
+  "cpu": [
+    "arm64"
+  ],
+  "main": "pino-rs.darwin-arm64.node",
+  "files": [
+    "pino-rs.darwin-arm64.node"
+  ],
+  "description": "pino-rs native binding for darwin-arm64",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/darwin808/pino-rs"
+  }
+}

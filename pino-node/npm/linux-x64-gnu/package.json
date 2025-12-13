@@ -1,0 +1,23 @@
+{
+  "name": "pino-rs-linux-x64-gnu",
+  "version": "0.3.8",
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "libc": [
+    "glibc"
+  ],
+  "main": "pino-rs.linux-x64-gnu.node",
+  "files": [
+    "pino-rs.linux-x64-gnu.node"
+  ],
+  "description": "pino-rs native binding for linux-x64-gnu",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/darwin808/pino-rs"
+  }
+}
