@@ -165,6 +165,10 @@ impl AsyncLogger {
         self.min_level = level;
     }
 
+    pub fn get_bindings(&self) -> &Fields {
+        &self.base_fields
+    }
+
     // Convenience methods
     #[inline] pub fn trace(&self, msg: &str) { self.log(Level::Trace, Some(msg), None); }
     #[inline] pub fn debug(&self, msg: &str) { self.log(Level::Debug, Some(msg), None); }

@@ -90,6 +90,19 @@ impl Logger {
             inner: self.inner.child(fields),
         })
     }
+
+    #[napi]
+    pub fn bindings(&self, env: Env) -> Result<Object> {
+        let fields = self.inner.get_bindings();
+        let mut obj = env.create_object()?;
+
+        for (key, value) in fields {
+            let js_val = json_to_napi_value(&env, value)?;
+            obj.set(key.as_str(), js_val)?;
+        }
+
+        Ok(obj)
+    }
 }
 
 fn log_with_either(
@@ -208,6 +221,39 @@ fn napi_value_to_json(val: Unknown) -> Result<Value> {
             Ok(Value::Null)
         }
         _ => Ok(Value::Null),
+    }
+}
+
+fn json_to_napi_value(env: &Env, value: &Value) -> Result<napi::JsUnknown> {
+    match value {
+        Value::String(s) => Ok(env.create_string(s)?.into_unknown()),
+        Value::Number(n) => {
+            if let Some(i) = n.as_i64() {
+                Ok(env.create_int64(i)?.into_unknown())
+            } else if let Some(f) = n.as_f64() {
+                Ok(env.create_double(f)?.into_unknown())
+            } else {
+                Ok(env.get_null()?.into_unknown())
+            }
+        }
+        Value::Bool(b) => Ok(env.get_boolean(*b)?.into_unknown()),
+        Value::Null => Ok(env.get_null()?.into_unknown()),
+        Value::Array(arr) => {
+            let mut js_arr = env.create_array(arr.len() as u32)?;
+            for (i, v) in arr.iter().enumerate() {
+                let js_val = json_to_napi_value(env, v)?;
+                js_arr.set(i as u32, js_val)?;
+            }
+            Ok(js_arr.coerce_to_object()?.into_unknown())
+        }
+        Value::Object(obj) => {
+            let mut js_obj = env.create_object()?;
+            for (k, v) in obj {
+                let js_val = json_to_napi_value(env, v)?;
+                js_obj.set(k.as_str(), js_val)?;
+            }
+            Ok(js_obj.into_unknown())
+        }
     }
 }
 

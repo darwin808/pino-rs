@@ -13,4 +13,5 @@ export declare class Logger {
   error(msgOrObj: string | object, msg?: string | undefined | null): void
   fatal(msgOrObj: string | object, msg?: string | undefined | null): void
   child(bindings: object): Logger
+  bindings(): object
 }
