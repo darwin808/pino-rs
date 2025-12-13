@@ -1,6 +1,6 @@
 {
   "name": "pino-rs-darwin-arm64",
-  "version": "0.3.8",
+  "version": "0.3.11",
   "os": [
     "darwin"
   ],

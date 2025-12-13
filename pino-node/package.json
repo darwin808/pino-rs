@@ -1,6 +1,6 @@
 {
   "name": "pino-rs",
-  "version": "0.3.8",
+  "version": "0.3.11",
   "description": "A blazingly fast Rust implementation of pino.js logger - fully compatible drop-in replacement",
   "main": "index.js",
   "types": "index.d.ts",
@@ -53,12 +53,12 @@
     "url": "https://github.com/darwin808/pino-rs"
   },
   "optionalDependencies": {
-    "pino-rs-win32-x64-msvc": "0.3.8",
-    "pino-rs-darwin-x64": "0.3.8",
-    "pino-rs-linux-x64-gnu": "0.3.8",
-    "pino-rs-linux-x64-musl": "0.3.8",
-    "pino-rs-linux-arm64-gnu": "0.3.8",
-    "pino-rs-darwin-arm64": "0.3.8",
-    "pino-rs-linux-arm64-musl": "0.3.8"
+    "pino-rs-win32-x64-msvc": "0.3.11",
+    "pino-rs-darwin-x64": "0.3.11",
+    "pino-rs-linux-x64-gnu": "0.3.11",
+    "pino-rs-linux-x64-musl": "0.3.11",
+    "pino-rs-linux-arm64-gnu": "0.3.11",
+    "pino-rs-darwin-arm64": "0.3.11",
+    "pino-rs-linux-arm64-musl": "0.3.11"
   }
 }
